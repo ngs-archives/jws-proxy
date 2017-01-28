@@ -1,10 +1,10 @@
 package main
 
 import (
-	"io"
 	"net/http"
 	"os"
 
+	xj "github.com/basgys/goxml2json"
 	"github.com/rs/cors"
 )
 
@@ -21,8 +21,13 @@ func main() {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		w.Header().Set("Content-Type", "text/xml")
-		io.Copy(w, res.Body)
+		json, err := xj.Convert(res.Body)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(json.Bytes())
 	}))
 	port := os.Getenv("PORT")
 	if port == "" {
